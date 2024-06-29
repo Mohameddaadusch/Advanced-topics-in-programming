@@ -1,0 +1,78 @@
+#include "Algorithm.h"
+#include "Direction.h"
+#include <random>
+
+
+Algorithm::Algorithm(Vacuum& vacuum) : vacuum(vacuum) {
+
+}
+
+void Algorithm::decideNextMove() {
+    Direction step_Direction=Direction::STAY;
+    if (vacuum.dirtSensor()>0){
+        vacuum.move(step_Direction);
+
+    }
+    else{
+        // Create a random device and use it to seed the random number generator
+        std::random_device rd;
+        std::mt19937 mt(rd()); // Mersenne Twister random number generator seeded with random_device
+        std::uniform_int_distribution<int> dist(1, 4); // Distribution for integers between 1 and 4 (inclusive)
+        int randomNumber = dist(mt);
+        step_Direction= intToDirection(randomNumber);
+        while (vacuum.wallSensor(step_Direction)==true){
+            int randomNumber = dist(mt);
+            step_Direction= intToDirection(randomNumber);
+        }
+    }
+    Path.push(step_Direction);
+    steps_Performed.push(step_Direction);
+    vacuum.move(step_Direction);
+    
+    
+}
+
+void Algorithm::backStep(){
+    Direction direction=Path.top();
+    switch (direction) {
+    case Direction::UP:
+        vacuum.move(Direction::DOWN);
+        steps_Performed.push(Direction::DOWN);
+        break;
+    case Direction::DOWN:
+        vacuum.move(Direction::UP);
+        steps_Performed.push(Direction::UP);
+        break;
+    case Direction::RIGHT:
+        vacuum.move(Direction::LEFT);
+        steps_Performed.push(Direction::LEFT);
+        break;
+    case Direction::LEFT:
+        vacuum.move(Direction::RIGHT);
+        steps_Performed.push(Direction::RIGHT);
+        break;
+    default:
+        //TODO: throw exception
+        break;
+    }
+    Path.pop();
+}
+
+bool Algorithm::cleanAlgorithm() {
+    Direction dir;
+    while(!vacuum.reachedMaxSteps() & vacuum.batterySensor() > Path.size()){
+        Algorithm::decideNextMove();
+    }
+    if(vacuum.reachedMaxSteps()){
+        return vacuum.isMissionComplete();
+    }
+    else{
+        if(vacuum.batterySensor() <= Path.size()){
+            while(Path.size()!=0){
+                backStep();
+            }
+            vacuum.charge();
+        }
+    }
+    return Algorithm::cleanAlgorithm();
+}

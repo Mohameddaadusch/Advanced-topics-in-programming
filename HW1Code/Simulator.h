@@ -1,0 +1,25 @@
+#ifndef SIMULATOR_H
+#define SIMULATOR_H
+
+#include "House.h"
+#include "Vacuum.h"
+#include "Algorithm.h"
+
+class Simulator {
+public:
+    Simulator(const std::string& inputFile);
+    void run();
+    void writeOutput(const std::string& outputFile);
+    void surroundByWalls();
+    void loadFromFile(const std::string& filename);
+    int main(int argc, char* argv[]);
+private:
+    //House house;
+    //Vacuum vacuum;
+    //Algorithm algorithm;
+    int dockX,dockY,maxBatterySteps,maxStepsAllowed;
+    std::vector<std::vector<int>> houseMap;
+
+};
+
+#endif
