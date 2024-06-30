@@ -9,7 +9,10 @@ Algorithm::Algorithm(Vacuum& vacuum) : vacuum(vacuum) {
 
 void Algorithm::decideNextMove() {
     Direction step_Direction=Direction::STAY;
-    if (vacuum.dirtSensor()>0){
+    if ((Path.size()==0) && (vacuum.batterySensor() < vacuum.getMaxBattery())){
+            vacuum.move(step_Direction);
+    }
+    else if (vacuum.dirtSensor()>0){
         vacuum.move(step_Direction);
         vacuum.clean();
 
@@ -25,10 +28,12 @@ void Algorithm::decideNextMove() {
             int randomNumber = dist(mt);
             step_Direction= intToDirection(randomNumber);
         }
+        vacuum.move(step_Direction);
     }
-    Path.push(step_Direction);
+    if (step_Direction!=Direction::STAY){
+        Path.push(step_Direction);
+    }
     steps_Performed.push(step_Direction);
-    vacuum.move(step_Direction);
     
     
 }
@@ -60,13 +65,16 @@ void Algorithm::backStep(){
 }
 
 bool Algorithm::cleanAlgorithm() {
+    if(vacuum.reachedMaxSteps() || vacuum.isMissionComplete()){
+        return vacuum.isMissionComplete();
+    }
     Direction dir;
     std::cout << "outside the while : reached max steps :" <<  vacuum.reachedMaxSteps() << ", path size : " <<  Path.size() << " battery left is : " << vacuum.batterySensor() <<std::endl;
-    while((!vacuum.reachedMaxSteps()) && (vacuum.batterySensor() > Path.size())){
+    while((!vacuum.reachedMaxSteps()) && (vacuum.batterySensor() >= Path.size()+1)){
         printf( "################################################################3 \n");
         std::cout << "insside the while : reached max steps :" <<  vacuum.reachedMaxSteps() << ", path size : " <<  Path.size() << " battery left is : " << vacuum.batterySensor() <<std::endl;
         Algorithm::decideNextMove();
-        
+        std::cout << "after decideNextMove : battery left is: " << vacuum.batterySensor() <<std::endl;
         vacuum.house.printHouse();
         std::cout << vacuum.pos_X << "," << vacuum.pos_Y << std::endl;
 
@@ -77,9 +85,30 @@ bool Algorithm::cleanAlgorithm() {
     else{
         if(vacuum.batterySensor() <= Path.size()){
             while(Path.size()!=0){
+                std::cout << "i am emptying the stack " << std::endl ; 
                 backStep();
+                if(vacuum.reachedMaxSteps()){
+                    return vacuum.isMissionComplete();
+                }
+                std::cout << vacuum.pos_X << "," << vacuum.pos_Y << std::endl;
             }
-            vacuum.charge();
+            
+            while(vacuum.batterySensor() < vacuum.getMaxBattery()){
+                if(vacuum.isMissionComplete()){
+                    return true;
+                }
+                if(vacuum.reachedMaxSteps()){
+                    return vacuum.isMissionComplete();
+                }
+                std::cout << "the battery before charge ******* : " << vacuum.batterySensor() << std::endl;
+                Algorithm::decideNextMove();
+                std::cout << "the battery before charge : " << vacuum.batterySensor() << std::endl;
+                vacuum.charge();
+                std::cout << "the battery after charge : " << vacuum.batterySensor() << std::endl;
+                
+            }
+
+            
         }
     }
     return Algorithm::cleanAlgorithm();

@@ -10,7 +10,12 @@ Vacuum::Vacuum(House& house, int maxBatterySteps, int maxSteps)
 void Vacuum::move(Direction direction) {
     switch (direction) {
         case Direction::STAY:
-            Vacuum::update_StepsAndBattery();
+            if (atDockingStation()==true){
+                Vacuum::curr_Steps+=1;
+            }
+            else {
+                Vacuum::update_StepsAndBattery();
+            }
             return;
         case Direction::UP:
             Vacuum::update_StepsAndBattery();
@@ -56,6 +61,10 @@ bool Vacuum::isBatteryExhausted() const {
     return (curr_BatterySteps<= 0);
 }
 
+int Vacuum::getMaxBattery() const {
+    return Vacuum::max_BatterySteps;
+}
+
 bool Vacuum::reachedMaxSteps() const{
     
     return (Vacuum::curr_Steps>=Vacuum::max_Steps);
@@ -74,7 +83,7 @@ bool Vacuum::atDockingStation() const {
 
 void Vacuum::charge() {
     if (atDockingStation()) {
-        curr_BatterySteps += max_BatterySteps / 20;
+        curr_BatterySteps += (max_BatterySteps / 20);
         if (curr_BatterySteps > max_BatterySteps) {
             curr_BatterySteps = max_BatterySteps;
         }
@@ -113,7 +122,7 @@ bool Vacuum::wallSensor(Direction direction) const{
     }
 }
 
-int Vacuum::batterySensor() const{
+float Vacuum::batterySensor() const{
     return curr_BatterySteps;
 }
 int Vacuum::getTotalDirt(){

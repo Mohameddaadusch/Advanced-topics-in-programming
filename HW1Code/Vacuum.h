@@ -6,8 +6,8 @@
 
 class Vacuum{
     
-    int curr_BatterySteps;
-    const int max_BatterySteps;
+    float curr_BatterySteps;
+    const float max_BatterySteps;
     int curr_Steps;
     const int max_Steps;
 public:
@@ -21,11 +21,12 @@ int pos_X, pos_Y;
     bool isMissionComplete() const;
     int dirtSensor() const;
     bool wallSensor(Direction dir) const;
-    int batterySensor() const;
+    float batterySensor() const;
     void update_StepsAndBattery();
     int getTotalDirt();
     bool atDockingStation() const;
     void charge();
+    int getMaxBattery() const;
 
 };
 
