@@ -4,13 +4,14 @@
 
 
 Algorithm::Algorithm(Vacuum& vacuum) : vacuum(vacuum) {
-
+    vacuum.house.printHouse();
 }
 
 void Algorithm::decideNextMove() {
     Direction step_Direction=Direction::STAY;
     if (vacuum.dirtSensor()>0){
         vacuum.move(step_Direction);
+        vacuum.clean();
 
     }
     else{
@@ -60,8 +61,15 @@ void Algorithm::backStep(){
 
 bool Algorithm::cleanAlgorithm() {
     Direction dir;
-    while(!vacuum.reachedMaxSteps() & vacuum.batterySensor() > Path.size()){
+    std::cout << "outside the while : reached max steps :" <<  vacuum.reachedMaxSteps() << ", path size : " <<  Path.size() << " battery left is : " << vacuum.batterySensor() <<std::endl;
+    while((!vacuum.reachedMaxSteps()) && (vacuum.batterySensor() > Path.size())){
+        printf( "################################################################3 \n");
+        std::cout << "insside the while : reached max steps :" <<  vacuum.reachedMaxSteps() << ", path size : " <<  Path.size() << " battery left is : " << vacuum.batterySensor() <<std::endl;
         Algorithm::decideNextMove();
+        
+        vacuum.house.printHouse();
+        std::cout << vacuum.pos_X << "," << vacuum.pos_Y << std::endl;
+
     }
     if(vacuum.reachedMaxSteps()){
         return vacuum.isMissionComplete();

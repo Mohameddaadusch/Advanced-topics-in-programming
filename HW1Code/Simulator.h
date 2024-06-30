@@ -7,12 +7,13 @@
 
 class Simulator {
 public:
-    Simulator(const std::string& inputFile);
+    Simulator();
     void run();
     void writeOutput(const std::string& outputFile);
     void surroundByWalls();
     void loadFromFile(const std::string& filename);
     int main(int argc, char* argv[]);
+    void printHouse() const;
 private:
     //House house;
     //Vacuum vacuum;

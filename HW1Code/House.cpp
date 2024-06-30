@@ -62,3 +62,18 @@ int House::getDockX() const {
 int House::getDockY() const {
     return dock_Y;
 }
+
+void House::printHouse() const {
+    for (const auto& row : house_Matrix) {
+        for (int cell : row) {
+            if (cell == -1) {
+                std::cout << 'W'; // Wall
+            } else if (cell == -2) {
+                std::cout << ' '; // Out of bound
+            } else {
+                std::cout << cell; // Dirt level
+            }
+        }
+        std::cout << std::endl;
+    }
+}

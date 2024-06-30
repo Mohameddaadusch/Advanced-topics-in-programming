@@ -11,7 +11,7 @@ class House {
     //void loadHouseFromFile(const std::string& filename);
 public:
     House(const std::vector<std::vector<int>>& HouseMatrix, int x, int y);
-    //void printHouse() const;
+    void printHouse() const;
     bool isWall(int x, int y) const;
     bool isOutOfBound(int x, int y) const;
     int getDirtLevel(int x, int y) const;

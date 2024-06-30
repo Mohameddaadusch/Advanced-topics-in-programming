@@ -45,7 +45,7 @@ bool Vacuum::clean() {
     int dirt=house.getDirtLevel(pos_X,pos_Y);
     assert(dirt>0);
     house.setDirt(pos_X,pos_Y);
-    Vacuum::update_StepsAndBattery();
+    //Vacuum::update_StepsAndBattery();
     if (isBatteryExhausted() || reachedMaxSteps()){
         return false;
     }
@@ -114,7 +114,7 @@ bool Vacuum::wallSensor(Direction direction) const{
 }
 
 int Vacuum::batterySensor() const{
-    return max_BatterySteps - curr_BatterySteps;
+    return curr_BatterySteps;
 }
 int Vacuum::getTotalDirt(){
     return house.getTotalDirt();

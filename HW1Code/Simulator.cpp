@@ -4,6 +4,7 @@
 #include <sstream>
 
 
+Simulator::Simulator(){}
 void Simulator::run() {
     // Main simulation loop
 }
@@ -24,8 +25,9 @@ void Simulator::loadFromFile(const std::string& filename) {
     while (std::getline(file, line)) {
         std::istringstream ss(line);
         if (currentLine == 0) {
+            char comma;
             // Read docking station coordinates from the first line
-            ss >> dockX >> dockY;
+            ss >> dockX >> comma >> dockY;
         } else if (currentLine == 1) {
             // Read max battery steps from the second line
             ss >> maxBatterySteps;
@@ -51,10 +53,10 @@ void Simulator::loadFromFile(const std::string& filename) {
 }
 
 void Simulator::surroundByWalls() {
+
     bool isSurrounded=true;
     int rows = houseMap.size();
-    int cols = rows > 0 ? houseMap[0].size() : 0;
-
+    int cols = houseMap[0].size();
     // Add walls to the top and bottom
     for (int i = 0; i < cols; ++i) {
         if (houseMap[0][i] != -1) {
@@ -66,7 +68,6 @@ void Simulator::surroundByWalls() {
             break;
         }
     }
-
     // Add walls to the left and right
     for (int i = 0; i < rows; ++i) {
         if (houseMap[i][0] != -1) {
@@ -108,9 +109,15 @@ int Simulator::main(int argc, char* argv[]){
 
     std::string filename = argv[1];
     Simulator::loadFromFile(filename);
+    std::cout << dockX << std::endl;
+    std::cout << dockY << std::endl;
+    printHouse();
+
     House house(houseMap,dockX,dockY);
 
     // Create a Vacuum and Algorithm object and run the cleaning process
+    std::cout << maxBatterySteps << std::endl;
+    std::cout << maxStepsAllowed << std::endl;
     Vacuum vacuum(house,maxBatterySteps,maxStepsAllowed);
     Algorithm algorithm(vacuum);
     /* Implement the cleaning process using your algorithm
@@ -121,12 +128,17 @@ int Simulator::main(int argc, char* argv[]){
     // Output results
     vacuum.printResults();
     */
+   printf( "################################################################3 \n");
+   printf( "STARTING THE ALGORITHM \n");
+   printf( "################################################################3 \n");
     bool x = algorithm.cleanAlgorithm();
+    std::cout <<  x << std::endl;
+
     return x == true ? 1 : 0;
 }
 
-/*
-void House::printHouse() const {
+
+void Simulator::printHouse() const {
     for (const auto& row : houseMap) {
         for (int cell : row) {
             if (cell == -1) {
@@ -140,4 +152,10 @@ void House::printHouse() const {
         std::cout << std::endl;
     }
 }
-*/
+
+
+int main(int argc,char* argv[]){
+    Simulator simulator;
+    printf ("%d" ,simulator.main(argc,argv));
+    return 1;
+}
