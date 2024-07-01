@@ -1,0 +1,5 @@
+UP, RIGHT, LEFT, RIGHT, LEFT, RIGHT, LEFT, RIGHT, LEFT, DOWN, STAY, STAY, STAY, STAY, STAY, STAY, STAY, STAY, STAY, STAY
+Total number of steps performed: 20
+Amount of dirt left in the house: 5
+Is the vacuum cleaner dead (battery exhausted): 0
+Is the mission succeeded: 0

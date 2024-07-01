@@ -25,7 +25,7 @@ void Algorithm::decideNextMove() {
         int randomNumber = dist(mt);
         step_Direction= intToDirection(randomNumber);
         while (vacuum.wallSensor(step_Direction)==true){
-            int randomNumber = dist(mt);
+            randomNumber = dist(mt);
             step_Direction= intToDirection(randomNumber);
         }
         vacuum.move(step_Direction);
@@ -33,6 +33,8 @@ void Algorithm::decideNextMove() {
     if (step_Direction!=Direction::STAY){
         Path.push(step_Direction);
     }
+    bool x = vacuum.wallSensor(step_Direction);
+    std::cout << x << "," << step_Direction << std::endl;
     steps_Performed.push(step_Direction);
     
     
@@ -68,7 +70,6 @@ bool Algorithm::cleanAlgorithm() {
     if(vacuum.reachedMaxSteps() || vacuum.isMissionComplete()){
         return vacuum.isMissionComplete();
     }
-    Direction dir;
     std::cout << "outside the while : reached max steps :" <<  vacuum.reachedMaxSteps() << ", path size : " <<  Path.size() << " battery left is : " << vacuum.batterySensor() <<std::endl;
     while((!vacuum.reachedMaxSteps()) && (vacuum.batterySensor() >= Path.size()+1)){
         printf( "################################################################3 \n");
@@ -113,3 +114,8 @@ bool Algorithm::cleanAlgorithm() {
     }
     return Algorithm::cleanAlgorithm();
 }
+
+std::queue<Direction> Algorithm::getStepsQueue(){
+    return Algorithm::steps_Performed; 
+}
+

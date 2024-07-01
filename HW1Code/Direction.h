@@ -12,5 +12,6 @@ enum class Direction {
 };
 
 Direction intToDirection(int value);
+std::ostream& operator<<(std::ostream& os, Direction dir);
 
 #endif // DIRECTION_H

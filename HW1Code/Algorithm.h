@@ -17,6 +17,7 @@ public:
     void decideNextMove(); //give me way to continue cleaning
     void backStep(); //return to dockStation
     bool cleanAlgorithm();
+    std::queue<Direction> getStepsQueue();
     
 };
 

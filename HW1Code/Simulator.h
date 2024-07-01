@@ -8,8 +8,7 @@
 class Simulator {
 public:
     Simulator();
-    void run();
-    void writeOutput(const std::string& outputFile);
+    void writeOutput(const std::string& outputFile, Algorithm alg , Vacuum vacuum,bool res);
     void surroundByWalls();
     void loadFromFile(const std::string& filename);
     int main(int argc, char* argv[]);

@@ -19,11 +19,11 @@ void Vacuum::move(Direction direction) {
             return;
         case Direction::UP:
             Vacuum::update_StepsAndBattery();
-            pos_X+=1;
+            pos_X-=1;
             return;
         case Direction::DOWN:
             Vacuum::update_StepsAndBattery();
-            pos_X-=1;
+            pos_X+=1;
             return;
         case Direction::RIGHT:
             Vacuum::update_StepsAndBattery();
@@ -58,7 +58,7 @@ bool Vacuum::clean() {
 }
 
 bool Vacuum::isBatteryExhausted() const {
-    return (curr_BatterySteps<= 0);
+    return (batterySensor()<= 0);
 }
 
 int Vacuum::getMaxBattery() const {
@@ -95,14 +95,15 @@ int Vacuum::dirtSensor() const{
 }
 
 bool Vacuum::wallSensor(Direction direction) const{
+    std::cout<< "Direction is :"<< direction<<"(" <<pos_X<<","<<pos_Y<<")"<<std::endl;
     switch (direction) { 
         case Direction::UP:
-            if ((house.isWall(pos_X+1,pos_Y)==true) || (house.isOutOfBound(pos_X+1,pos_Y)==true)){
+            if ((house.isWall(pos_X-1,pos_Y)==true) || (house.isOutOfBound(pos_X-1,pos_Y)==true)){
                 return true;
             }
             return false;
         case Direction::DOWN:
-            if ((house.isWall(pos_X-1,pos_Y)==true) || (house.isOutOfBound(pos_X-1,pos_Y)==true)){
+            if ((house.isWall(pos_X+1,pos_Y)==true) || (house.isOutOfBound(pos_X+1,pos_Y)==true)){
                 return true;
             }
             return false;

@@ -16,3 +16,27 @@ Direction intToDirection(int value) {
             throw std::invalid_argument("Invalid integer value for Direction");
     }
 }
+
+std::ostream& operator<<(std::ostream& os, Direction dir) {
+    switch (dir) {
+        case Direction::STAY:
+            os << "STAY";
+            break;
+        case Direction::LEFT:
+            os << "LEFT";
+            break;
+        case Direction::RIGHT:
+            os << "RIGHT";
+            break;
+        case Direction::UP:
+            os << "UP";
+            break;
+        case Direction::DOWN:
+            os << "DOWN";
+            break;
+        default:
+            os << "Unknown direction";
+            break;
+    }
+    return os;
+}

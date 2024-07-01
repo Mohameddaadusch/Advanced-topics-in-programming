@@ -45,7 +45,7 @@ bool House::isOutOfBound(int x, int y) const {
 //-1 if the point is wall
 //-2 if the point is out of bound
 int House::getDirtLevel(int x, int y) const {
-    assert(house_Matrix[x][y]>=0 & house_Matrix[x][y]<=9 ); // check if the value in point is correct
+    assert(house_Matrix[x][y]>=0 && house_Matrix[x][y]<=9 ); // check if the value in point is correct
     return house_Matrix[x][y];
 }
 

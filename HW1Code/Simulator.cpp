@@ -5,12 +5,46 @@
 
 
 Simulator::Simulator(){}
-void Simulator::run() {
-    // Main simulation loop
-}
 
-void Simulator::writeOutput(const std::string& outputFile) {
-    // Write output to file
+void Simulator::writeOutput(const std::string& outputFile, Algorithm algorithm, Vacuum vacuum, bool res) {
+    std::ofstream out(outputFile);
+    if (!out.is_open()) {
+        std::cerr << "Error: Cannot open file " << outputFile << std::endl;
+        return;
+        // Write steps performed by the vacuum cleaner
+        out << "Steps performed by the vacuum cleaner:\n";
+        // You need to replace this with your actual stepsPerformed data
+    }
+    
+    std::queue<Direction> queue = algorithm.getStepsQueue();
+    Direction direction;
+    int qSize = queue.size();
+    while (queue.size()>0)
+    {
+        direction = queue.front();
+        queue.pop();
+        if(queue.size()==0){
+            out <<  direction <<"\n" ;
+        }
+        else{
+            out << direction << ", ";
+        }
+        
+    }
+  
+    // Write total number of steps performed
+    out << "Total number of steps performed: " << qSize << "\n";
+
+    // Write amount of dirt left in the house
+    out << "Amount of dirt left in the house: " << vacuum.getTotalDirt() << "\n";
+
+    // Write indication of whether the vacuum cleaner is dead
+    out << "Is the vacuum cleaner dead (battery exhausted): " << vacuum.isBatteryExhausted() << "\n";
+
+    // Write indication of whether the mission is succeeded
+    out << "Is the mission succeeded: " << res << "\n";
+
+    out.close();
 }
 
 void Simulator::loadFromFile(const std::string& filename) {
@@ -96,8 +130,8 @@ void Simulator::surroundByWalls() {
 
     // Update the houseMap to the new matrix with walls
     houseMap = newHouseMap;
-    dockX++;
-    dockY++;
+    dockX+=1;
+    dockY+=1;
     
 }
 
@@ -131,10 +165,11 @@ int Simulator::main(int argc, char* argv[]){
    printf( "################################################################3 \n");
    printf( "STARTING THE ALGORITHM \n");
    printf( "################################################################3 \n");
-    bool x = algorithm.cleanAlgorithm();
-    std::cout <<  x << std::endl;
+    bool res = algorithm.cleanAlgorithm();
+    std::cout <<  res << std::endl;
+    writeOutput("output.txt",algorithm,vacuum ,res);
 
-    return x == true ? 1 : 0;
+    return res == true ? 1 : 0;
 }
 
 
