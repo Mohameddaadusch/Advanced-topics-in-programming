@@ -14,6 +14,7 @@ Direction intToDirection(int value) {
             return Direction::DOWN;
         default:
             throw std::invalid_argument("Invalid integer value for Direction");
+            break;
     }
 }
 

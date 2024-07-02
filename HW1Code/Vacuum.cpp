@@ -2,7 +2,7 @@
 #include "Direction.h"
 #include <exception>
 #include <cassert>
-Vacuum::Vacuum(House& house, int maxBatterySteps, int maxSteps)
+Vacuum::Vacuum(House& house, float maxBatterySteps, int maxSteps)
     : house(house), max_BatterySteps(maxBatterySteps), max_Steps(maxSteps), pos_X(house.getDockX())
     , pos_Y(house.getDockY()), curr_BatterySteps(maxBatterySteps), curr_Steps(0) {}
 
@@ -61,7 +61,7 @@ bool Vacuum::isBatteryExhausted() const {
     return (batterySensor()<= 0);
 }
 
-int Vacuum::getMaxBattery() const {
+float Vacuum::getMaxBattery() const {
     return Vacuum::max_BatterySteps;
 }
 

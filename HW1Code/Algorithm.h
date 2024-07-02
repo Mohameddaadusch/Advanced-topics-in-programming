@@ -10,8 +10,6 @@ class Algorithm {
     Vacuum& vacuum;
     std::stack<Direction> Path;
     std::queue<Direction> steps_Performed;
-    int cnt1=0;
-    int cnt2=0;
 public:
     Algorithm(Vacuum& vacuum);
     void decideNextMove(); //give me way to continue cleaning

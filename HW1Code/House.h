@@ -8,7 +8,6 @@ class House {
     std::vector<std::vector<int>> house_Matrix;
     int dock_X, dock_Y;
     int total_dirt;
-    //void loadHouseFromFile(const std::string& filename);
 public:
     House(const std::vector<std::vector<int>>& HouseMatrix, int x, int y);
     void printHouse() const;

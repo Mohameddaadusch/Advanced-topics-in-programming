@@ -11,7 +11,7 @@ public:
     void writeOutput(const std::string& outputFile, Algorithm alg , Vacuum vacuum,bool res);
     void surroundByWalls();
     void loadFromFile(const std::string& filename);
-    int main(int argc, char* argv[]);
+    int run(int argc, char* argv[]);
     void printHouse() const;
 private:
     //House house;

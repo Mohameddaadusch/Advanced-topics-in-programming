@@ -6,10 +6,22 @@
 House::House(const std::vector<std::vector<int>>& HouseMatrix, int x, int y): house_Matrix(HouseMatrix), dock_X(x),dock_Y(y) {
     int rows=house_Matrix.size();
     int cols=house_Matrix[0].size();
+    if(house_Matrix[x][y] > 0){
+        house_Matrix[x][y] = 0;
+    }
+    if (x < 0 || y < 0 || x >= static_cast<int>(HouseMatrix.size()) || y >= static_cast<int>(HouseMatrix[0].size()) || house_Matrix[x][y] < 0 ) {
+        throw std::invalid_argument("Invalid docking station coordinates/value. please try again:");
+    }
     total_dirt=0;
     for (int i=0; i<rows ;i++){
+            if(static_cast<int>(house_Matrix[i].size()) != cols){
+                throw std::invalid_argument("Invalid matrix , the matrix not (mxn). please change yuour matrix:");
+            }
         for (int j=0;j<cols ; j++){
             if(house_Matrix[i][j]>0){
+                if(house_Matrix[x][y] > 9 || house_Matrix[x][y] < -1){
+                    throw std::invalid_argument("Invalid house block value. please change yuour matrix with values from -1 to 9:");
+                }
                 total_dirt+=house_Matrix[i][j];
             }
         }
@@ -20,11 +32,6 @@ int House::getTotalDirt() const{
     return House::total_dirt;
 }
 /*
-void House::loadHouseFromFile(const std::string& filename) {
-    std::ifstream file(filename);
-    // Load the house layout from the file
-    // Set dockX and dockY based on the file input
-}
 
 void House::printHouse() const {
     // Print the house layout for debugging

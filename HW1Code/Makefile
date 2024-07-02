@@ -10,9 +10,6 @@ TARGET = myrobot
 # Source files
 SRCS = Algorithm.cpp Direction.cpp House.cpp Simulator.cpp Vacuum.cpp
 
-# Header files
-HEADERS = Algorithm.h Direction.h House.h Simulator.h Vacuum.h
-
 # Object files
 OBJS = $(SRCS:.cpp=.o)
 
@@ -24,16 +21,16 @@ $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
 
 # Compile the source files into object files
-%.o: %.cpp $(HEADERS)
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Run the program with input file and redirect output to output.txt
+# Run the program with input file
 run: $(TARGET)
-	./$(TARGET) input.txt > output.txt
+	./$(TARGET) input.txt
 
 # Clean up object files and executable
 clean:
-	rm -f $(OBJS) $(TARGET) output.txt
+	rm -f $(OBJS) $(TARGET)
 
 # Phony targets
 .PHONY: all run clean

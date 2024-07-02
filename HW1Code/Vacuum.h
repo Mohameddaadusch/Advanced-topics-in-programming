@@ -5,14 +5,16 @@
 #include "Direction.h"
 
 class Vacuum{
-    
-    float curr_BatterySteps;
+    House& house;
     const float max_BatterySteps;
-    int curr_Steps;
     const int max_Steps;
+    int pos_X;
+    int pos_Y;
+    float curr_BatterySteps;
+    int curr_Steps;
+
 public:
-    int pos_X, pos_Y;
-    Vacuum(House& house, int maxBatterySteps, int maxSteps);
+    Vacuum(House& house, float maxBatterySteps, int maxSteps);
     
     void move(Direction direction);//move to direction and update battery and step values
     bool clean();
@@ -26,9 +28,7 @@ public:
     int getTotalDirt();
     bool atDockingStation() const;
     void charge();
-    int getMaxBattery() const;
-    House& house;
-
+    float getMaxBattery() const;
 };
 
 #endif

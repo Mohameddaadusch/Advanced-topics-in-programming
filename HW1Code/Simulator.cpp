@@ -11,26 +11,23 @@ void Simulator::writeOutput(const std::string& outputFile, Algorithm algorithm, 
     if (!out.is_open()) {
         std::cerr << "Error: Cannot open file " << outputFile << std::endl;
         return;
-        // Write steps performed by the vacuum cleaner
-        out << "Steps performed by the vacuum cleaner:\n";
-        // You need to replace this with your actual stepsPerformed data
     }
-    
+
+    // Write steps performed by the vacuum cleaner
+    out << "Steps performed by the vacuum cleaner:\n";
+
     std::queue<Direction> queue = algorithm.getStepsQueue();
     Direction direction;
     int qSize = queue.size();
-    while (queue.size()>0)
-    {
+    while (!queue.empty()) {
         direction = queue.front();
         queue.pop();
-        if(queue.size()==0){
-            out <<  direction <<"\n" ;
+        out << direction;
+        if (!queue.empty()) {
+            out << ", ";
         }
-        else{
-            out << direction << ", ";
-        }
-        
     }
+    out << "\n";
   
     // Write total number of steps performed
     out << "Total number of steps performed: " << qSize << "\n";
@@ -39,19 +36,20 @@ void Simulator::writeOutput(const std::string& outputFile, Algorithm algorithm, 
     out << "Amount of dirt left in the house: " << vacuum.getTotalDirt() << "\n";
 
     // Write indication of whether the vacuum cleaner is dead
-    out << "Is the vacuum cleaner dead (battery exhausted): " << vacuum.isBatteryExhausted() << "\n";
+    out << "Is the vacuum cleaner dead (battery exhausted): " << (vacuum.isBatteryExhausted() ? "Yes" : "No") << "\n";
 
     // Write indication of whether the mission is succeeded
-    out << "Is the mission succeeded: " << res << "\n";
+    out << "Is the mission succeeded: " << (res ? "Yes" : "No") << "\n";
 
     out.close();
 }
+
 
 void Simulator::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Cannot open file " << filename << std::endl;
-        exit(1); // Handle this more gracefully in production code
+        return; // Handle this more gracefully in production code
     }
 
     std::string line;
@@ -65,9 +63,17 @@ void Simulator::loadFromFile(const std::string& filename) {
         } else if (currentLine == 1) {
             // Read max battery steps from the second line
             ss >> maxBatterySteps;
+            if(maxBatterySteps < 0){
+                throw std::invalid_argument("Invalid maxBattery steps . please change:");
+
+            }
         } else if (currentLine == 2) {
             // Read max steps allowed from the third line
             ss >> maxStepsAllowed;
+            if(maxStepsAllowed < 0){
+                throw std::invalid_argument("Invalid maxStepsAllowed steps . please change:");
+
+            }
         } else {
             // Read the house matrix from the fourth line onwards
             std::vector<int> row;
@@ -135,19 +141,22 @@ void Simulator::surroundByWalls() {
     
 }
 
-int Simulator::main(int argc, char* argv[]){
+int Simulator::run(int argc, char* argv[]){
+    std::string outputName;
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <house_input_file>" << std::endl;
         return 1;
     }
 
     std::string filename = argv[1];
+    std::string splitFileName = filename.substr(5);
     Simulator::loadFromFile(filename);
     std::cout << dockX << std::endl;
     std::cout << dockY << std::endl;
-    printHouse();
+    //printHouse();
 
     House house(houseMap,dockX,dockY);
+    house.printHouse();
 
     // Create a Vacuum and Algorithm object and run the cleaning process
     std::cout << maxBatterySteps << std::endl;
@@ -167,8 +176,10 @@ int Simulator::main(int argc, char* argv[]){
    printf( "################################################################3 \n");
     bool res = algorithm.cleanAlgorithm();
     std::cout <<  res << std::endl;
-    writeOutput("output.txt",algorithm,vacuum ,res);
-
+    outputName = "output" + splitFileName;
+    writeOutput(outputName,algorithm,vacuum ,res);
+    house.printHouse();
+    
     return res == true ? 1 : 0;
 }
 
@@ -191,6 +202,6 @@ void Simulator::printHouse() const {
 
 int main(int argc,char* argv[]){
     Simulator simulator;
-    printf ("%d" ,simulator.main(argc,argv));
+    printf ("%d" ,simulator.run(argc,argv));
     return 1;
 }
