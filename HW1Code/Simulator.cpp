@@ -149,7 +149,7 @@ int Simulator::run(int argc, char* argv[]){
     }
 
     std::string filename = argv[1];
-    std::string splitFileName = filename.substr(5);
+    //std::string splitFileName = filename.substr(5);
     Simulator::loadFromFile(filename);
     std::cout << dockX << std::endl;
     std::cout << dockY << std::endl;
@@ -176,7 +176,7 @@ int Simulator::run(int argc, char* argv[]){
    printf( "################################################################3 \n");
     bool res = algorithm.cleanAlgorithm();
     std::cout <<  res << std::endl;
-    outputName = "output" + splitFileName;
+    outputName = "output_" + filename;
     writeOutput(outputName,algorithm,vacuum ,res);
     house.printHouse();
     

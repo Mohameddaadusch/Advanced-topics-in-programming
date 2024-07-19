@@ -1,6 +1,0 @@
-Steps performed by the vacuum cleaner:
-UP, STAY, STAY, STAY, STAY, STAY, DOWN, DOWN, STAY, STAY, STAY, STAY, DOWN, STAY, STAY, UP, UP, UP, DOWN, DOWN, DOWN, UP, DOWN, RIGHT, STAY, STAY, STAY, STAY, STAY, RIGHT, STAY, STAY, STAY, LEFT, RIGHT, RIGHT, STAY, STAY, STAY, STAY, RIGHT, LEFT, RIGHT, UP, STAY, STAY, STAY, STAY, STAY, STAY, UP, STAY, STAY, STAY, STAY, STAY, DOWN, DOWN, UP, UP, DOWN, UP, DOWN, DOWN, UP, DOWN, LEFT, RIGHT, UP, DOWN, UP, UP, DOWN, UP, DOWN, DOWN, UP, UP, DOWN, DOWN, LEFT, RIGHT, LEFT, LEFT, LEFT, RIGHT, LEFT, LEFT, UP, DOWN, UP, UP, UP, DOWN, DOWN, DOWN, UP, UP, UP, DOWN
-Total number of steps performed: 100
-Amount of dirt left in the house: 0
-Is the vacuum cleaner dead (battery exhausted): Yes
-Is the mission succeeded: Yes
