@@ -1,0 +1,9 @@
+c- Strange house(the Docking sorounded)
+MaxSteps=100
+MaxBattery = 100
+Rows  =4
+Cols = 10
+WWWWWWWWWW
+W 2 13WDWW
+WWWW737W3W
+WWWWWWWWWW

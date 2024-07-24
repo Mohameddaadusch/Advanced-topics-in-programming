@@ -1,0 +1,9 @@
+a-Small house
+MaxSteps=100
+MaxBattery = 40
+Rows  =4
+Cols = 12
+WWWWWWWWWWWW
+W 2    D   W
+WW   631 13W
+WWWWWWWWWWWW

@@ -1,0 +1,8 @@
+b-BIG house(with area sorounded by walls - with new colomns and rows)
+MaxSteps=300
+MaxBattery = 60
+Rows    = 5
+Cols = 14
+W12W    D  W
+WWW  731 13W
+WWWW1WW2WWWW

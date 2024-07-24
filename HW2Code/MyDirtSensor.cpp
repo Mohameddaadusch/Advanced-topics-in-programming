@@ -1,29 +1,25 @@
+#ifndef MYSDIRTSENSOR_H
+#define MYSDIRTSENSOR_H
+
 #include "dirt_sensor.h"
 #include <iostream>
 #include "House.h"
 #include "Vacuum.h"
 
 class MyDirtSensor : public DirtSensor {
-    House& house;
-    int pos_X;
-    int pos_Y;
-    int dock_X,dock_Y;
+    const Vacuum& vacuum;
 
 public:
-    MyDirtSensor::MyDirtSensor(House& house): house(house) {
-        dock_X=house.getDockX();
-        dock_Y=house.getDockY();
+    MyDirtSensor(Vacuum& v): vacuum(v) {
     }
     // Override the pure virtual function from DirtSensor
     int dirtLevel() const override {
-        return house.getDirtLevel(pos_X,pos_Y);
+        return vacuum.dirtSensor();
     }
 
-    void setPosition(int x , int y){
-        pos_X=dock_X+x;
-        pos_Y=dock_Y+y;
-    }
 };
+
+#endif
 
 
 

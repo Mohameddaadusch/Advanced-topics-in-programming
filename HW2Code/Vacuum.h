@@ -2,10 +2,10 @@
 #define Vacuum_H
 
 #include "House.h"
-#include "Direction.h"
+#include "enums.h"
 
 class Vacuum{
-    House& house;
+    House* house=nullptr;
     int max_Steps;
     int curr_Steps;
     int pos_X;
@@ -15,9 +15,10 @@ class Vacuum{
     
 
 public:
-    Vacuum(House& house, float maxBatterySteps, int maxSteps);
+    Vacuum();
+    void init(House& house, float maxBatterySteps, int maxSteps);
     
-    void move(Direction direction);//move to direction and update battery and step values
+    void move(Step direction);//move to direction and update battery and step values
     bool clean();
     bool isBatteryExhausted() const;
     bool reachedMaxSteps() const;
@@ -25,7 +26,7 @@ public:
     int dirtSensor() const;
     bool wallSensor(Direction dir) const;
     float batterySensor() const;
-    void update_StepsAndBattery();
+    void update_Battery();
     int getTotalDirt();
     bool atDockingStation() const;
     void charge();

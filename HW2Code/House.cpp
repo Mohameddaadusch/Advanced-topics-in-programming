@@ -3,13 +3,18 @@
 #include <fstream>
 #include <cassert>
 
-House::House(const std::vector<std::vector<int>>& HouseMatrix, int x, int y): house_Matrix(HouseMatrix), dock_X(x),dock_Y(y) {
-    int rows=house_Matrix.size();
+House::House(){}
+
+void House::init(const std::vector<std::vector<int>>& HouseM, int x, int y) {
+    house_Matrix=HouseM;
+    dock_X = x;
+    dock_Y = y;
+    int rows= house_Matrix.size();
     int cols=house_Matrix[0].size();
     if(house_Matrix[x][y] > 0){
         house_Matrix[x][y] = 0;
     }
-    if (x < 0 || y < 0 || x >= static_cast<int>(HouseMatrix.size()) || y >= static_cast<int>(HouseMatrix[0].size()) || house_Matrix[x][y] < 0 ) {
+    if (x < 0 || y < 0 || x >= static_cast<int>(house_Matrix.size()) || y >= static_cast<int>(house_Matrix[0].size()) || house_Matrix[x][y] < 0 ) {
         throw std::invalid_argument("Invalid docking station coordinates/value. please try again:");
     }
     total_dirt=0;
@@ -42,10 +47,7 @@ void House::printHouse() const {
 bool House::isWall(int x, int y) const {
     return (house_Matrix[x][y] == -1);
 }
-
-bool House::isOutOfBound(int x, int y) const {
-    return (house_Matrix[x][y] == -2);
-}
+    
 
 
 // Return the dirt level at (x, y) - a value between 1-9 or 0 (if the point is clean) or 

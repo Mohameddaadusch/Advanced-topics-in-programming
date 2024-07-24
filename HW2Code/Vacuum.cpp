@@ -1,36 +1,46 @@
+#include <iostream>
 #include "Vacuum.h"
-#include "Direction.h"
+#include "enums.h"
 #include <exception>
 #include <cassert>
-Vacuum::Vacuum(House& house, float maxBatterySteps, int maxSteps)
-    : house(house), max_BatterySteps(maxBatterySteps), max_Steps(maxSteps), pos_X(house.getDockX())
-    , pos_Y(house.getDockY()), curr_BatterySteps(maxBatterySteps), curr_Steps(0) {}
+
+Vacuum::Vacuum(){}
+
+void Vacuum::init(House& house, float maxBatterySteps, int maxSteps){
+        this->house=&house;
+        this->max_BatterySteps=maxBatterySteps;
+        this->max_Steps=maxSteps;
+        this->pos_X=house.getDockX();
+        this->pos_Y=house.getDockY();
+        this->curr_BatterySteps=maxBatterySteps;
+        this->curr_Steps=0;
+    }
 
 //return true if the move was successful, else return false
-void Vacuum::move(Direction direction) {
+void Vacuum::move(Step direction) {
     switch (direction) {
-        case Direction::STAY:
+        case Step::Stay:
             if (atDockingStation()==true){
                 Vacuum::curr_Steps+=1;
             }
             else {
-                Vacuum::update_StepsAndBattery();
+                Vacuum::update_Battery();
             }
             return;
-        case Direction::UP:
-            Vacuum::update_StepsAndBattery();
+        case Step::North:
+            Vacuum::update_Battery();
             pos_X-=1;
             return;
-        case Direction::DOWN:
-            Vacuum::update_StepsAndBattery();
+        case Step::South:
+            Vacuum::update_Battery();
             pos_X+=1;
             return;
-        case Direction::RIGHT:
-            Vacuum::update_StepsAndBattery();
+        case Step::West:
+            Vacuum::update_Battery();
             pos_Y+=1;
             return;
-        case Direction::LEFT:
-            Vacuum::update_StepsAndBattery();
+        case Step::East:
+            Vacuum::update_Battery();
             pos_Y-=1;
             return;
         default:
@@ -39,18 +49,20 @@ void Vacuum::move(Direction direction) {
     }
 }
 
-void Vacuum::update_StepsAndBattery(){
+void Vacuum::update_Battery(){
     Vacuum::curr_BatterySteps-=1;   
-    Vacuum::curr_Steps+=1;
+    //Vacuum::curr_Steps+=1;
 }
+
 
 
 // Implement cleaning logic , return false if the battery was exhausted or we reached the maximum steps, else return true
 bool Vacuum::clean() {
-    int dirt=house.getDirtLevel(pos_X,pos_Y);
+    int dirt=house->getDirtLevel(pos_X,pos_Y);
     assert(dirt>0);
-    house.setDirt(pos_X,pos_Y);
-    //Vacuum::update_StepsAndBattery();
+    house->setDirt(pos_X,pos_Y);
+    Vacuum::update_Battery();
+
     if (isBatteryExhausted() || reachedMaxSteps()){
         return false;
     }
@@ -71,49 +83,46 @@ bool Vacuum::reachedMaxSteps() const{
 }
 // Implement logic to check if mission is complete
 bool Vacuum::isMissionComplete() const {
-    if((house.getTotalDirt()==0) & ((pos_X == house.getDockX()) && (pos_Y == house.getDockY())==true)){
+    if((house->getTotalDirt()==0) & ((pos_X == house->getDockX()) && (pos_Y == house->getDockY())==true)){
             return true;
         }
     return false;  
 }
 
 bool Vacuum::atDockingStation() const {
-    return (pos_X == house.getDockX()) && (pos_Y == house.getDockY());
+    return (pos_X == house->getDockX()) && (pos_Y == house->getDockY());
 }
 
 void Vacuum::charge() {
-    if (atDockingStation()) {
         curr_BatterySteps += (max_BatterySteps / 20);
         if (curr_BatterySteps > max_BatterySteps) {
             curr_BatterySteps = max_BatterySteps;
         }
-    }
 }    
 
 int Vacuum::dirtSensor() const{
-    return house.getDirtLevel(pos_X,pos_Y);
+    return house->getDirtLevel(pos_X,pos_Y);
 }
 
 bool Vacuum::wallSensor(Direction direction) const{
-    std::cout<< "Direction is :"<< direction<<"(" <<pos_X<<","<<pos_Y<<")"<<std::endl;
     switch (direction) { 
-        case Direction::UP:
-            if ((house.isWall(pos_X-1,pos_Y)==true)){
+        case Direction::North:
+            if ((house->isWall(pos_X-1,pos_Y)==true)){
                 return true;
             }
             return false;
-        case Direction::DOWN:
-            if ((house.isWall(pos_X+1,pos_Y)==true)){
+        case Direction::South:
+            if ((house->isWall(pos_X+1,pos_Y)==true)){
                 return true;
             }
             return false;
-        case Direction::RIGHT:
-            if (house.isWall(pos_X,pos_Y+1)==true){
+        case Direction::West:
+            if (house->isWall(pos_X,pos_Y+1)==true){
                 return true;
             }
             return false;
-        case Direction::LEFT:
-            if (house.isWall(pos_X,pos_Y-1)==true){
+        case Direction::East:
+            if (house->isWall(pos_X,pos_Y-1)==true){
                 return true;
             }
             return false;
@@ -127,6 +136,6 @@ float Vacuum::batterySensor() const{
     return curr_BatterySteps;
 }
 int Vacuum::getTotalDirt(){
-    return house.getTotalDirt();
+    return house->getTotalDirt();
 }
 
