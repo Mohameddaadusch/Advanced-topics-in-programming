@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.13)
+
+# Define the project for the Simulator
+project(Simulator VERSION 1.0 LANGUAGES CXX)
+
+# Add the executable for the Simulator
+add_executable(simulator_exe 
+    AlgorithmRegistrar.cpp 
+    MySimulator.cpp 
+    ../House/House.cpp 
+    ../score/score.cpp 
+    ../vacuum/vacuum.cpp
+)
+
+# Include directories
+target_include_directories(simulator_exe PUBLIC 
+    ${CMAKE_SOURCE_DIR}/../common 
+    ${CMAKE_SOURCE_DIR}/../House 
+    ${CMAKE_SOURCE_DIR}/../score 
+    ${CMAKE_SOURCE_DIR}/../vacuum 
+    ${CMAKE_SOURCE_DIR}/../algorithm/Algorithm1 
+    ${CMAKE_SOURCE_DIR}/../algorithm/Algorithm2
+)
+
+# Link the dynamic libraries and set required options
+target_link_options(simulator_exe PUBLIC "-rdynamic")
+target_link_libraries(simulator_exe PUBLIC dl)
+
+
+
