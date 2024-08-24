@@ -1,6 +1,6 @@
 h1
-MaxSteps=100
-MaxBattery = 20
+MaxSteps=110
+MaxBattery = 30
 Rows  =4
 Cols = 12
 WWWWWWWWWWWW

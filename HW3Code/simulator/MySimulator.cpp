@@ -217,7 +217,6 @@ int MySimulator::run() {
     std::cout<<"RUNNING THE PROGRAM"<<std::endl;
     std::string outputName;
     Status = "WORKING";
-    
     Step nextStep = algorithm->nextStep();
     std::cout<<stepToString(nextStep)<<std::endl;
     while(nextStep != Step::Finish && steps_Performed.size() < maxStepsAllowed ){
@@ -239,16 +238,16 @@ int MySimulator::run() {
     }
     steps_Performed.push(nextStep);
 
-    if(battery_Meter.getBatteryState() <= 0){Status = "DEAD";}
     if(nextStep == Step::Finish && vacuum.atDockingStation()){Status = "FINISHED";}
+    else if(battery_Meter.getBatteryState() <= 0){Status = "DEAD";}
     else{Status = "WORKING";}
     
     outputName = houseName + '-' +algo_Name + ".txt";
     writeOutput(outputName);
     std::cout<<"IN DOCKING STATION? "<<vacuum.atDockingStation()<<"   , THE STATUS IS:   " << Status<<std::endl;
     std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$   FINISHED THE ALGORITHM   $$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
-
-    int score = Score::calculateScore((Status == "DEAD" ? 1 : -1), (Status == "FINISHED" ? 1 : -1),
+    std::cout << (Status == "DEAD" ? true : false) <<std::endl;
+    int score = Score::calculateScore((Status == "DEAD" ? true : false), (Status == "FINISHED" ? true : false),
                                       vacuum.atDockingStation(), maxStepsAllowed, steps_Performed.size(), vacuum.getTotalDirt());
     return score;
 
@@ -340,7 +339,7 @@ void MySimulator::writeOutput(const std::string& outputFile) {
     out << "InDock = " << (vacuum.atDockingStation()? "TRUE":"FALSE") << "\n";
 
     // Status
-    out << "Score = " << Score::calculateScore((Status == "DEAD"? 1:-1) , (Status == "FINISHED"? 1:-1), 
+    out << "Score = " << Score::calculateScore((Status == "DEAD"? true:false) , (Status == "FINISHED"? true:false), 
                                                 vacuum.atDockingStation(),maxStepsAllowed,qSize,vacuum.getTotalDirt()) << "\n";
 
     // Write steps performed by the vacuum cleaner

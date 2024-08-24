@@ -14,6 +14,7 @@
 #include <queue>
 #include <map>
 #include <unordered_set>
+#include <set>
 #include <vector>
 #include <string>
 #include <limits>
@@ -35,17 +36,21 @@ class MyAlgorithm : public AbstractAlgorithm {
     int curr_X;
     int curr_Y;
     float maxBattery;
+    std::stack<std::pair<int,int>> unexplored_Stack;
+    std::set<std::pair<int,int>> cleaned_Set;
+    std::stack<Direction> path_To_LastPoint;
+    bool returning_To_LastPoint=true;
 
 
     
     std::map<Direction,int> min_Map={
-        {Direction::East , 0},
-        {Direction::North , 0},
         {Direction::West , 0},
+        {Direction::North , 0},
+        {Direction::East , 0},
         {Direction::South , 0}
     };
     
-    std::vector<Direction> directions_Order = {Direction::East , Direction:: North , Direction:: West , Direction::South};
+    std::vector<Direction> directions_Order = {Direction::West , Direction:: North , Direction:: East , Direction::South};
 
 
     //std::shared_ptr<Graph> house_Graph;
@@ -66,10 +71,15 @@ public:
     bool checkVisited(Direction direction);
     Direction convertStepToDir(Step step);
     //void setFields();
-
-
-
+    Direction intToDirection(int value);
     std::string stepToString(Step step);
     std::string directionToString(Direction dir);
+    //void doneWorking();
+    int discoverUnexploredPoints();
+    std::pair<int, int> getCoordinatesInDirection(Direction dir);
+    void printStack(const std::stack<std::pair<int, int>>& s);
+    bool findPairInSet(const std::set<std::pair<int, int>>& mySet, const std::pair<int, int>& target);
+    Step returnToLastPoint();
+    
 };
 #endif

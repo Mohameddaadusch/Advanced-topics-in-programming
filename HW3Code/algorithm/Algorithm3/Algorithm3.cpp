@@ -1,7 +1,8 @@
-#include "Algo_123456789.h"
+#include "Algorithm3.h"
 #include <iostream>
+#include <random>
 
-Algo_123456789::Algo_123456789(){
+Algorithm3::Algorithm3(){
     //std::shared_ptr<Node> dockingStation = std::make_shared<Node>();
     //house_Graph= std::make_shared<Graph>(dockingStation);
     //bfs_Queue.push(0);
@@ -36,27 +37,27 @@ void MyAlgorithm::setFields() {
 }
 */
 
-void Algo_123456789::setMaxSteps(std::size_t maxSteps) {
+void MyAlgorithm::setMaxSteps(std::size_t maxSteps) {
     this->max_Steps=maxSteps;
     this->curr_Steps=0;
 }
 
-void Algo_123456789::setWallsSensor(const WallsSensor& walls_Sensor ){
+void MyAlgorithm::setWallsSensor(const WallsSensor& walls_Sensor ){
     std::cout<<"initializing wallsensor"<<std::endl;
     this->wall_Sensor = &walls_Sensor;
     
 }
 
-void Algo_123456789::setDirtSensor(const DirtSensor& Dirt_Sensor ){
+void MyAlgorithm::setDirtSensor(const DirtSensor& Dirt_Sensor ){
     this->dirt_Sensor = &Dirt_Sensor;
 }
 
-void Algo_123456789::setBatteryMeter(const BatteryMeter& Battery_Meter){
+void MyAlgorithm::setBatteryMeter(const BatteryMeter& Battery_Meter){
     this->battery_Meter = &Battery_Meter;
     this->maxBattery=Battery_Meter.getBatteryState();
 }
 
-Direction Algo_123456789::getMinDir() {
+Direction MyAlgorithm::getMinDir() {
     int min = std::min({min_Map[Direction::West], min_Map[Direction::North], min_Map[Direction::East], min_Map[Direction::South]});
     if (min_Map [Direction::West] == min){
         return Direction::West;
@@ -69,7 +70,7 @@ Direction Algo_123456789::getMinDir() {
     }
 }
 
-Direction Algo_123456789::changeDir(std::unordered_set<Direction> history){
+Direction MyAlgorithm::changeDir(std::unordered_set<Direction> history){
     std::map<Direction,int> newMap=min_Map;
     for (const Direction& dir: history){
         newMap.erase(dir);
@@ -87,7 +88,7 @@ Direction Algo_123456789::changeDir(std::unordered_set<Direction> history){
     return res;
 }
 
-Step Algo_123456789::convertDirToStep(Direction dir){
+Step MyAlgorithm::convertDirToStep(Direction dir){
     if(dir == Direction::East){
         return Step::East;
     }
@@ -104,14 +105,30 @@ Step Algo_123456789::convertDirToStep(Direction dir){
 
 }
 
-Step  Algo_123456789::nextStep(){
+Direction MyAlgorithm::intToDirection(int value) {
+    switch (value) {
+        case 1:
+            return Direction::West;
+        case 2:
+            return Direction::North;
+        case 3:
+            return Direction::East;
+        case 4: 
+            return Direction::South;
+        default:
+            throw std::invalid_argument("Invalid integer value for Direction");
+            break;
+    }
+}
+
+Step  MyAlgorithm::nextStep(){
+    std::cout<<"My Algo next step" <<std::endl;
     std::cout<<"step number :  " << curr_Steps+1 << std::endl;
     Step step_Direction=Step::Stay;
     bool fromBack=false;
     Direction direction;
     std::unordered_set<Direction> history;
     std::cout<<"the battery is @@@@@@@@@@@@@@@@@@@    "<< battery_Meter->getBatteryState() << " ,the path size is@@@@@@@@@@@  "<< Path.size()<<std::endl;
-
     if (dirt_Sensor->dirtLevel()==0){
         std::cout<<"curr x cur y  ------------------------------------------ :  " << curr_X<< ","<< curr_Y << std::endl;
         visited[std::pair<int,int>(curr_X,curr_Y)]=0;
@@ -124,7 +141,13 @@ Step  Algo_123456789::nextStep(){
     std::cout<<"" << std::endl;
     std::cout<<"current steps !!!!!!!!!!!! :  " << curr_Steps<< ", max steps !!!!!!!!!!!!!!!!!!!!!!!"<< max_Steps << std::endl;
 
-    if(curr_Steps >= max_Steps && curr_X == 0 && curr_Y == 0){
+    if(done_Working==true){
+        std::cout<<"backstep because done working ************************************************************************************** " <<std::endl;
+        step_Direction = backStep();
+        direction = convertStepToDir(step_Direction);
+        fromBack=true;
+    }
+    else if(curr_Steps >= max_Steps && curr_X == 0 && curr_Y == 0){
         std::cout<<"finiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiish" << std::endl;
 
         step_Direction = Step::Finish;
@@ -155,6 +178,8 @@ Step  Algo_123456789::nextStep(){
 
         if((!wall_Sensor->isWall(Direction::North) && !checkVisited(Direction::North)) || (!wall_Sensor->isWall(Direction::South) && !checkVisited(Direction::South)) 
             || (!wall_Sensor->isWall(Direction::West) && !checkVisited(Direction::West)) || (!wall_Sensor->isWall(Direction::East) && !checkVisited(Direction::East))){
+            //in this "if" there is a direction which is not wall and not visited, so search for it and find it
+            std::cout<<"int the first if"<<std::endl;
             while(wall_Sensor->isWall(direction) || checkVisited(direction)){
                 std::cout<<"the direction: ^^^^^^^^^ "<< directionToString(direction)<< " is or wall or visited"<<std::endl;
                 history.insert(direction);
@@ -167,11 +192,36 @@ Step  Algo_123456789::nextStep(){
             step_Direction = convertDirToStep(direction);
             std::cout<<"t#############   "<< stepToString(step_Direction)<<std::endl;
         }
-        else if (!wall_Sensor->isWall(direction)){
+        else{
+            //in this "else" every direction is or wall or visited, so take a random direction
+            std::cout<<"in the second case, every direction is or wall or visited, so we are going to choose randomly" << std::endl;
+            std::random_device rd;
+            std::mt19937 mt(rd()); // Mersenne Twister random number generator seeded with random_device
+            std::uniform_int_distribution<int> dist(1, 4); // Distribution for integers between 1 and 4 (inclusive)
+            int randomNumber = dist(mt);
+            direction= intToDirection(randomNumber);
+            std::cout<<"the first random direction: &&&& "<< directionToString(direction)<<std::endl;
+            while(wall_Sensor->isWall(direction)){
+                std::cout<<"the random direction: &&&& "<< directionToString(direction)<< " is wall"<<std::endl;
+                randomNumber = dist(mt);
+                direction= intToDirection(randomNumber);
+                std::cout<<"changed the direction: "<< directionToString(direction)<<std::endl;
+            }
+
             min_Map[direction]+=1;
             step_Direction = convertDirToStep(direction);
-            std::cout<<"the direction: "<< directionToString(direction)<< " is not wall"<<std::endl;
+
+        }
+        /*
+        else if (!wall_Sensor->isWall(direction)){
+            //in this "if" the minimum direction is not a wall so move towards it
+            std::cout<<"int the second if"<<std::endl;
+            min_Map[direction]+=1;
+            step_Direction = convertDirToStep(direction);
+            std::cout<<"in the second if, the direction: "<< directionToString(direction)<< " is not wall"<<std::endl;
         }else{
+            //in this case the minimum direction is a wall so search for a new direction which is not a wall
+            std::cout<<"int the third if"<<std::endl;
             while(wall_Sensor->isWall(direction)){
                 std::cout<<"the direction: &&&& "<< directionToString(direction)<< " is wall"<<std::endl;
                 history.insert(direction);
@@ -183,6 +233,7 @@ Step  Algo_123456789::nextStep(){
             std::cout<<"t#############   "<< stepToString(step_Direction)<<std::endl;
 
         }
+        */
     }
     //vacuum.move(step_Direction);
     
@@ -226,7 +277,7 @@ Step  Algo_123456789::nextStep(){
     */
 }
 
-Direction Algo_123456789::convertStepToDir(Step step_Direction){
+Direction MyAlgorithm::convertStepToDir(Step step_Direction){
     switch (step_Direction)
     {
     case Step::North:
@@ -245,7 +296,7 @@ Direction Algo_123456789::convertStepToDir(Step step_Direction){
 }
 
 
-void Algo_123456789::changeCoordinates(Step step_Direction){
+void MyAlgorithm::changeCoordinates(Step step_Direction){
     switch (step_Direction)
     {
     case Step::North:
@@ -266,7 +317,7 @@ void Algo_123456789::changeCoordinates(Step step_Direction){
 
 }
 
-std::string  Algo_123456789::directionToString(Direction dir) { 
+std::string  MyAlgorithm::directionToString(Direction dir) { 
     switch (dir) { 
         case Direction::North: return "North"; 
         case Direction::East: return "East"; 
@@ -276,7 +327,7 @@ std::string  Algo_123456789::directionToString(Direction dir) {
     }
 }
 
-Step Algo_123456789::backStep(){
+Step MyAlgorithm::backStep(){
     Direction direction=Path.top();
     std::cout<<directionToString(direction)<<std::endl;
     Path.pop();
@@ -299,7 +350,7 @@ Step Algo_123456789::backStep(){
     }
 }
 
-bool Algo_123456789::checkVisited(Direction direction){
+bool MyAlgorithm::checkVisited(Direction direction){
     switch (direction) {
     case Direction::North:
         return alreadyVisited(std::pair<int,int>(curr_X-1,curr_Y));
@@ -316,7 +367,7 @@ bool Algo_123456789::checkVisited(Direction direction){
 
 }
 
-bool Algo_123456789::alreadyVisited( const std::pair<int, int> keyToFind){ 
+bool MyAlgorithm::alreadyVisited( const std::pair<int, int> keyToFind){ 
     auto it = visited.find(keyToFind);
     return it != visited.end(); 
 }
@@ -325,7 +376,7 @@ bool Algo_123456789::alreadyVisited( const std::pair<int, int> keyToFind){
 
 
 
-std::string Algo_123456789::stepToString(Step step){
+std::string MyAlgorithm::stepToString(Step step){
     switch (step){
         case Step::Stay: return "s";
         case Step::North: return "N";
@@ -336,7 +387,13 @@ std::string Algo_123456789::stepToString(Step step){
         default: return "Unknown";
     }
 }
+/*
+void MyAlgorithm::doneWorking(){
+    done_Working=true;
+}
+*/
+
 
 extern "C"{
-    REGISTER_ALGORITHM(Algo_123456789);
+    REGISTER_ALGORITHM(Algorithm3);
 }

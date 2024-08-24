@@ -1,5 +1,5 @@
-#ifndef ALGO_123456789
-#define ALGO_123456789
+#ifndef ALGORITHM3
+#define ALGORITHM3
 
 #include "../../common/AlgorithmRegistrar.h"
 #include "../../common/AbstractAlgorithm.h"
@@ -22,7 +22,7 @@
 
 
 
-class Algo_123456789 : public AbstractAlgorithm {
+class Algorithm3 : public AbstractAlgorithm {
     std::stack<Direction> Path;
     std::queue<int> bfs_Queue;
     std::queue<Step> steps_Performed;
@@ -35,6 +35,7 @@ class Algo_123456789 : public AbstractAlgorithm {
     int curr_X;
     int curr_Y;
     float maxBattery;
+    bool done_Working=false;
 
 
     
@@ -51,7 +52,7 @@ class Algo_123456789 : public AbstractAlgorithm {
     //std::shared_ptr<Graph> house_Graph;
 public:
 
-    Algo_123456789();
+    MyAlgorithm();
     void setMaxSteps(std::size_t maxSteps) override;
 	void setWallsSensor(const WallsSensor&) override;
 	void setDirtSensor(const DirtSensor&) override;
@@ -66,10 +67,10 @@ public:
     bool checkVisited(Direction direction);
     Direction convertStepToDir(Step step);
     //void setFields();
-
-
-
+    Direction intToDirection(int value);
     std::string stepToString(Step step);
     std::string directionToString(Direction dir);
+    //void doneWorking();
+    
 };
 #endif

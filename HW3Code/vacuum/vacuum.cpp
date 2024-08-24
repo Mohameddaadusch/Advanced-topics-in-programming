@@ -32,11 +32,11 @@ void Vacuum::move(Step direction) {
             Vacuum::update_Battery();
             pos_X+=1;
             return;
-        case Step::West:
+        case Step::East:
             Vacuum::update_Battery();
             pos_Y+=1;
             return;
-        case Step::East:
+        case Step::West:
             Vacuum::update_Battery();
             pos_Y-=1;
             return;
@@ -113,12 +113,12 @@ bool Vacuum::wallSensor(Direction direction) const{
                 return true;
             }
             return false;
-        case Direction::West:
+        case Direction::East:
             if (house->isWall(pos_X,pos_Y+1)==true){
                 return true;
             }
             return false;
-        case Direction::East:
+        case Direction::West:
             if (house->isWall(pos_X,pos_Y-1)==true){
                 return true;
             }
