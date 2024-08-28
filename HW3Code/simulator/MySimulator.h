@@ -39,11 +39,14 @@ private:
     std::string fileName;
     std::vector<void*> algorithmHandles;  // Store handles to the loaded libraries
     int score;
+    bool summaryOnly;
 
-    //Sensors:
-    MyWallSensor wall_Sensor ;
-    MyDirtSensor dirt_Sensor;
-    MyBatteryMeter battery_Meter;
+    // Unique pointers to sensors
+    std::unique_ptr<WallsSensor> wall_Sensor;
+    std::unique_ptr<DirtSensor> dirt_Sensor;
+    std::unique_ptr<BatteryMeter> battery_Meter;
+
+
     std::queue<Step> steps_Performed;
     std::string Status;
     std::string algo_Name;
@@ -77,6 +80,7 @@ public:
     std::string& getStatus() {return Status ;}
     size_t getStepsPerformedSize() const {return steps_Performed.size();}
     int getScore();
+    void setSummaryOnly(bool summary);
 
 
 

@@ -4,8 +4,8 @@ std::mutex consoleMutex;
 
 // Constructor
 MySimulator::MySimulator() : dockX(-1) ,dockY(-1) , maxBatterySteps(-1) ,maxStepsAllowed(-1), rows(-1), 
-                                cols(-1), wall_Sensor(vacuum) , dirt_Sensor(vacuum) , battery_Meter(vacuum) 
-                                      ,houseMap(),house(), vacuum(), fileName(""), algo_Name(), Status()  {
+                                cols(-1) ,houseMap(),house(), vacuum(), fileName(""), algo_Name(), Status() , summaryOnly(false) 
+                                , wall_Sensor(std::make_unique<MyWallSensor>(vacuum)), dirt_Sensor(std::make_unique<MyDirtSensor>(vacuum)),battery_Meter(std::make_unique<MyBatteryMeter>(vacuum)) {
     /*
     // Print the fields
     std::cout << "MySimulator Constructor" << std::endl;
@@ -46,6 +46,11 @@ std::string MySimulator::removeSpaces(const std::string& input) {
     }
     return result;
 }
+
+void MySimulator::setSummaryOnly(bool summary) {
+    summaryOnly = summary;
+}
+
 
 
 // Read house layout from file
@@ -215,51 +220,50 @@ void MySimulator::setAlgorithm(std::unique_ptr<AbstractAlgorithm> algo ,const st
         }
     */
     algorithm->setMaxSteps(maxStepsAllowed);
-    algorithm->setWallsSensor(wall_Sensor);
-    algorithm->setDirtSensor(dirt_Sensor);
-    algorithm->setBatteryMeter(battery_Meter);
+    algorithm->setWallsSensor(*wall_Sensor);    // Dereference unique_ptr to pass raw pointer/reference
+    algorithm->setDirtSensor(*dirt_Sensor);     
+    algorithm->setBatteryMeter(*battery_Meter);
 }
 
 
 // Run the simulation
 int MySimulator::run() {
-    //std::cout<<"RUNNING THE PROGRAM"<<std::endl;
-    std::string outputName;
     Status = "WORKING";
     Step nextStep = algorithm->nextStep();
-    //std::cout<<stepToString(nextStep)<<std::endl;
-    while(nextStep != Step::Finish && steps_Performed.size() < maxStepsAllowed ){
+
+    while (nextStep != Step::Finish && steps_Performed.size() < maxStepsAllowed) {
         steps_Performed.push(nextStep);
 
-        if (nextStep==Step::Stay){
-            if (vacuum.atDockingStation() ){
+        if (nextStep == Step::Stay) {
+            if (vacuum.atDockingStation()) {
                 vacuum.charge();
-            }
-            else{
+            } else {
                 vacuum.clean();
             }
-
-        }
-        else{
+        } else {
             vacuum.move(nextStep);
         }
         nextStep = algorithm->nextStep();
     }
     steps_Performed.push(nextStep);
 
-    if(nextStep == Step::Finish && vacuum.atDockingStation()){Status = "FINISHED";}
-    else if(battery_Meter.getBatteryState() <= 0){Status = "DEAD";}
-    else{Status = "WORKING";}
-    
-    outputName = houseName + '-' +algo_Name + ".txt";
-    writeOutput(outputName);
-    //std::cout<<"IN DOCKING STATION? "<<vacuum.atDockingStation()<<"   , THE STATUS IS:   " << Status<<std::endl;
-    //std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$   FINISHED THE ALGORITHM   $$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
-    //std::cout << (Status == "DEAD" ? true : false) <<std::endl;
+    if (nextStep == Step::Finish && vacuum.atDockingStation()) {
+        Status = "FINISHED";
+    } else if (battery_Meter->getBatteryState() <= 0) {
+        Status = "DEAD";
+    } else {
+        Status = "WORKING";
+    }
+
+    if (!summaryOnly) {
+        std::string outputName = houseName + '-' + algo_Name + ".txt";
+        writeOutput(outputName);
+    }
+
     int score = this->getScore();
     return score;
-
 }
+
 
 
 void MySimulator::surroundByWalls() {
@@ -433,20 +437,19 @@ int MySimulator::calculateTimeout() const {
 }
 
 
-
 void run_simulation_with_timeout(const std::string& house, const std::string& algo_name, 
-                                 std::unique_ptr<AbstractAlgorithm> algorithm, int& score) {
+                                 std::unique_ptr<AbstractAlgorithm> algorithm, int& score, bool summaryOnly) {
     MySimulator simulator;
     
     if (!simulator.readHouseFile(house)) {
         std::lock_guard<std::mutex> lock(consoleMutex);
-        //std::cerr << "Error reading the file " << house << ". The file will be ignored." << std::endl;
         return;
     }
     
+    simulator.setSummaryOnly(summaryOnly);
+    simulator.setAlgorithm(std::move(algorithm), algo_name);
+    
     try {
-        simulator.setAlgorithm(std::move(algorithm), algo_name);
-        
         int timeout = simulator.calculateTimeout();
         auto future = std::async(std::launch::async, [&simulator]() {
             return simulator.run();
@@ -457,8 +460,8 @@ void run_simulation_with_timeout(const std::string& house, const std::string& al
             score = simulator.getMaxStepsAllowed() * 2 + initialDirt * 300 + 2000;
             std::cerr << "Timeout reached for house: " << house << " and algorithm: " << algo_name << std::endl;
         } else {
-            std::lock_guard<std::mutex> lock(consoleMutex); // Protect score retrieval
-            score = future.get(); // Ensures that we retrieve the result from the simulation run
+            std::lock_guard<std::mutex> lock(consoleMutex);
+            score = future.get();
         }
     } catch (const std::exception& e) {
         std::lock_guard<std::mutex> lock(consoleMutex);
@@ -470,7 +473,7 @@ void run_simulation_with_timeout(const std::string& house, const std::string& al
         } else {
             std::cerr << "Could not open error file: " << errorFilename << std::endl;
         }
-        score = -1; // Mark as invalid
+        score = -1;
     } catch (...) {
         std::lock_guard<std::mutex> lock(consoleMutex);
         std::string errorFilename = algo_name + ".error";
@@ -481,23 +484,28 @@ void run_simulation_with_timeout(const std::string& house, const std::string& al
         } else {
             std::cerr << "Could not open error file: " << errorFilename << std::endl;
         }
-        score = -1; // Mark as invalid
+        score = -1;
     }
 }
 
 
 
+
 int main(int argc, char** argv) {
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <house_input_directory> <algorithm_directory> [-num_threads=<NUMBER>]" << std::endl;
+    if (argc < 1 ) {
+        std::cerr << "Error : no executable file given" << std::endl;
         return 1;
     }
 
     int numThreads = 10;
+    bool summaryOnly = false;
+
     for (int i = 3; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg.find("-num_threads=") == 0) {
             numThreads = std::stoi(arg.substr(13));
+        } else if (arg == "-summary_only") {
+            summaryOnly = true;
         }
     }
 
@@ -518,7 +526,6 @@ int main(int argc, char** argv) {
             algoPath = argument.substr(std::string("-algo_path=").length());
         }
     }
-
 
     for (const auto& entry : std::filesystem::directory_iterator(housePath)) {
         if (entry.path().extension() == ".house") {
@@ -543,7 +550,7 @@ int main(int argc, char** argv) {
 
             for (int t = 0; t < numThreads && houseIndex < houseFiles.size(); ++t, ++houseIndex) {
                 auto algorithmClone = algo.create();
-                threadPool.emplace_back(run_simulation_with_timeout, houseFiles[houseIndex], algo.name(), std::move(algorithmClone), std::ref(scores[algorithmIndex][houseIndex]));
+                threadPool.emplace_back(run_simulation_with_timeout, houseFiles[houseIndex], algo.name(), std::move(algorithmClone), std::ref(scores[algorithmIndex][houseIndex]), summaryOnly);
             }
 
             for (auto& thread : threadPool) {
@@ -576,7 +583,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    //writing to the summary.csv file
+    // Writing to the summary.csv file
     csvFile << "Algorithm/House";
     for (const auto& house : validHouseFiles) {
         std::string baseHouseName = std::filesystem::path(house).stem().string();
@@ -596,14 +603,12 @@ int main(int argc, char** argv) {
     csvFile.close();
     //std::cout << "Summary written to summary.csv" << std::endl;
 
-
-
-
     AlgorithmRegistrar::getAlgorithmRegistrar().clear();
     clear_libs(algo_libs);
     std::cout << "The Algorithm Finished Running" << std::endl;
 
     return 0;
 }
+
 
 
