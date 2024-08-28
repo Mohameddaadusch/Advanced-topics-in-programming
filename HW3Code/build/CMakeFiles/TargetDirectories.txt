@@ -1,5 +1,0 @@
-/home/jadmahajne/Advanced-topics-in-programming/HW3Code/build/CMakeFiles/algorithm2.dir
-/home/jadmahajne/Advanced-topics-in-programming/HW3Code/build/CMakeFiles/algorithm1.dir
-/home/jadmahajne/Advanced-topics-in-programming/HW3Code/build/CMakeFiles/main.dir
-/home/jadmahajne/Advanced-topics-in-programming/HW3Code/build/CMakeFiles/edit_cache.dir
-/home/jadmahajne/Advanced-topics-in-programming/HW3Code/build/CMakeFiles/rebuild_cache.dir

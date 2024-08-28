@@ -4,7 +4,8 @@
 
 House::House(){}
 
-void House::init(const std::vector<std::vector<int>>& HouseM, int x, int y) {
+void House::init(std::string houseName ,const std::vector<std::vector<int>>& HouseM, int x, int y) {
+    house_Name=houseName;
     house_Matrix=HouseM;
     dock_X = x;
     dock_Y = y;
@@ -53,6 +54,7 @@ bool House::isWall(int x, int y) const {
 //-1 if the point is wall
 //-2 if the point is out of bound
 int House::getDirtLevel(int x, int y) const {
+    //std::cout<<"in house : " << house_Name <<std::endl;
     assert(house_Matrix[x][y]>=0 && house_Matrix[x][y]<=9 ); // check if the value in point is correct
     return house_Matrix[x][y];
 }

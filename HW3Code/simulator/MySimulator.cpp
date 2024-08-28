@@ -1,11 +1,12 @@
 #include "MySimulator.h"
 
+std::mutex consoleMutex;
+
 // Constructor
 MySimulator::MySimulator() : dockX(-1) ,dockY(-1) , maxBatterySteps(-1) ,maxStepsAllowed(-1), rows(-1), 
                                 cols(-1), wall_Sensor(vacuum) , dirt_Sensor(vacuum) , battery_Meter(vacuum) 
                                       ,houseMap(),house(), vacuum(), fileName(""), algo_Name(), Status()  {
-
-
+    /*
     // Print the fields
     std::cout << "MySimulator Constructor" << std::endl;
     std::cout << "houseName: " << houseName << std::endl;
@@ -21,6 +22,7 @@ MySimulator::MySimulator() : dockX(-1) ,dockY(-1) , maxBatterySteps(-1) ,maxStep
     std::cout << "Status: " << Status << std::endl;
     std::cout << "algo_Name: " << algo_Name << std::endl;
     std::cout << "steps_Performed size: " << steps_Performed.size() << std::endl;
+    */
 }
 
 // Destructor to close dynamically loaded libraries
@@ -61,7 +63,7 @@ bool MySimulator::readHouseFile(const std::string& filename) {
     // Read house name / description
     if (std::getline(file, line)) {
         houseName = line;
-        std::cout << houseName << std::endl;
+        //std::cout << houseName << std::endl;
     }
 
     // Read MaxSteps
@@ -108,7 +110,7 @@ bool MySimulator::readHouseFile(const std::string& filename) {
         }
     }
 
-    std::cout << "rows: "<< rows <<"   cols: "<< cols<< std::endl;
+    //std::cout << "rows: "<< rows <<"   cols: "<< cols<< std::endl;
 
     // Initialize the house matrix with the specified dimensions
     houseMap.resize(rows, std::vector<int>(cols, 0));
@@ -140,7 +142,7 @@ bool MySimulator::readHouseFile(const std::string& filename) {
                         }
                         else if (std::isdigit(ch)) {
                             int val = ch - '0';  // Convert the character to an integer
-                            std::cerr << "i: " << i << "   j: " << j << "   char: " << ch << "   val is: " << val << std::endl;
+                            //std::cerr << "i: " << i << "   j: " << j << "   char: " << ch << "   val is: " << val << std::endl;
                             houseMap[i][j] = val;
                         } else {
                             // If 'ch' is not a digit, throw an error or handle it accordingly
@@ -163,7 +165,7 @@ bool MySimulator::readHouseFile(const std::string& filename) {
 
     file.close();
     printHouse();
-    house.init(houseMap,dockX,dockY);
+    house.init(houseName,houseMap,dockX,dockY);
 
     vacuum.init(house,maxBatterySteps,maxStepsAllowed);
 
@@ -171,7 +173,13 @@ bool MySimulator::readHouseFile(const std::string& filename) {
 }
 
 void MySimulator::writeErrorFile(const std::string& houseFilename, const std::string& errorMsg) {
-    std::string errorFilename = houseFilename.substr(0, houseFilename.find_last_of(".")) + ".error";
+    // Extract the base name of the house file (without the directory path)
+    std::string baseFilename = std::filesystem::path(houseFilename).stem().string();
+    
+    // Create the error filename in the current directory
+    std::string errorFilename = baseFilename + ".error";
+    
+    // Write the error message to the file in the current directory
     std::ofstream errorFile(errorFilename);
     if (errorFile.is_open()) {
         errorFile << errorMsg << std::endl;
@@ -182,20 +190,21 @@ void MySimulator::writeErrorFile(const std::string& houseFilename, const std::st
 }
 
 
+
 // Print the house layout
 void MySimulator::printHouse() const {
     for (const auto& row : houseMap) {
         for (int cell : row) {
-            std::cout << cell << " ";
+            //std::cout << cell << " ";
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
 }
 
 
 // Set the algorithm for the simulator
-void MySimulator::setAlgorithm(AbstractAlgorithm* algo ,const std::string& algo_name) {
-    algorithm= algo;
+void MySimulator::setAlgorithm(std::unique_ptr<AbstractAlgorithm> algo ,const std::string& algo_name) {
+    algorithm = std::move(algo);
     algo_Name = algo_name;
     /*
         // Check if the algorithm is of type MyAlgorithm
@@ -214,11 +223,11 @@ void MySimulator::setAlgorithm(AbstractAlgorithm* algo ,const std::string& algo_
 
 // Run the simulation
 int MySimulator::run() {
-    std::cout<<"RUNNING THE PROGRAM"<<std::endl;
+    //std::cout<<"RUNNING THE PROGRAM"<<std::endl;
     std::string outputName;
     Status = "WORKING";
     Step nextStep = algorithm->nextStep();
-    std::cout<<stepToString(nextStep)<<std::endl;
+    //std::cout<<stepToString(nextStep)<<std::endl;
     while(nextStep != Step::Finish && steps_Performed.size() < maxStepsAllowed ){
         steps_Performed.push(nextStep);
 
@@ -244,11 +253,10 @@ int MySimulator::run() {
     
     outputName = houseName + '-' +algo_Name + ".txt";
     writeOutput(outputName);
-    std::cout<<"IN DOCKING STATION? "<<vacuum.atDockingStation()<<"   , THE STATUS IS:   " << Status<<std::endl;
-    std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$   FINISHED THE ALGORITHM   $$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
-    std::cout << (Status == "DEAD" ? true : false) <<std::endl;
-    int score = Score::calculateScore((Status == "DEAD" ? true : false), (Status == "FINISHED" ? true : false),
-                                      vacuum.atDockingStation(), maxStepsAllowed, steps_Performed.size(), vacuum.getTotalDirt());
+    //std::cout<<"IN DOCKING STATION? "<<vacuum.atDockingStation()<<"   , THE STATUS IS:   " << Status<<std::endl;
+    //std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$   FINISHED THE ALGORITHM   $$$$$$$$$$$$$$$$$$$$$$$$$$"<<std::endl;
+    //std::cout << (Status == "DEAD" ? true : false) <<std::endl;
+    int score = this->getScore();
     return score;
 
 }
@@ -339,8 +347,7 @@ void MySimulator::writeOutput(const std::string& outputFile) {
     out << "InDock = " << (vacuum.atDockingStation()? "TRUE":"FALSE") << "\n";
 
     // Status
-    out << "Score = " << Score::calculateScore((Status == "DEAD"? true:false) , (Status == "FINISHED"? true:false), 
-                                                vacuum.atDockingStation(),maxStepsAllowed,qSize,vacuum.getTotalDirt()) << "\n";
+    out << "Score = " << this->getScore() << "\n";
 
     // Write steps performed by the vacuum cleaner
     out << "Steps:\n";
@@ -354,6 +361,18 @@ void MySimulator::writeOutput(const std::string& outputFile) {
     out.close();
 }
 
+int MySimulator::getScore(){
+    std::queue<Step> queue = steps_Performed;
+    int qSize = queue.size();
+    int score=Score::calculateScore((Status == "DEAD"? true:false) , (Status == "FINISHED"? true:false), 
+                                                vacuum.atDockingStation(),maxStepsAllowed,qSize,vacuum.getTotalDirt());
+    if (Status == "FINISHED"){
+        return score-1;   //excluding the Finish step
+    }else{
+        return score;
+    }
+
+}
 
 std::string MySimulator::stepToString(Step step){
     switch (step){
@@ -368,68 +387,29 @@ std::string MySimulator::stepToString(Step step){
 }
 
 
-/*
-
-//-------------------------------
-// main.cpp
-//-------------------------------
-int main(int argc, char** argv) {
-    
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <house_input_file>" << std::endl;
-        return 1;
-    }
-    std::vector<std::string> houseFiles;
-    std::string housePath = argv[1];
-    //insert all files with suffix .house to houseFiles vector
-    for (const auto& entry : std::filesystem::directory_iterator(housePath)) {
-        if (entry.path().extension() == ".house") {
-            houseFiles.push_back(entry.path().string());
-            std::cout<<entry.path().string()<<std::endl;
-        }
-    }
-
-    // dlopen
-    for(const auto& algo: AlgorithmRegistrar::getAlgorithmRegistrar()) {
-        std::cout << "BEFORE CREATING THE PROGRAM" << std::endl;
-        auto algorithm = algo.create();
-        std::cout << "SUCCEDED TO CREATING THE PROGRAM" << std::endl;
-        //  std::cout << algo.name() << ": " << static_cast<int>(algorithm->nextStep()) << std::endl;
-        //set up the simulator
-        MySimulator simulator;
-
-        //std::string outputName;
-
-        for (const auto& house : houseFiles) {
-            // TODO: get houseFilePath from command line
-            if (simulator.readHouseFile(house)==false){
-                std::cout << "Error reading the file" << std::endl;
-                return 1;
-            }
-            simulator.setAlgorithm(*algorithm, algo.name());
-            simulator.run();
-            // Wait for 10 seconds before moving to the next algorithm
-            std::cout << "Waiting for 10 seconds before the next algorithm..." << std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
-
-    }
-    AlgorithmRegistrar::getAlgorithmRegistrar().clear();
-    // dlclose
-}
-*/
 // Load the algorithms using dlopen
-void register_libs(const char* libs_dir, std::vector<void*>& libs){     
 
-    for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::path(libs_dir))) {
-
+void register_libs(const char* algo_path, std::vector<void*>& algo_libs) {
+    for (const auto& entry : std::filesystem::directory_iterator(algo_path)) {
         if (entry.path().extension() == ".so") {
-            void* lib_ptr = dlopen(entry.path().c_str(), RTLD_LAZY);
-            if (!lib_ptr) {
-                std::cerr << "Error loading algorithm: " << dlerror() << std::endl;
-                continue;
+            try {
+                // Load the shared library and store its handle in algo_libs
+                void* libHandle = dlopen(entry.path().c_str(), RTLD_LAZY);
+                if (!libHandle) {
+                    throw std::runtime_error(dlerror());
+                }
+                algo_libs.push_back(libHandle);
+            } catch (const std::exception& e) {
+                std::string algoName = entry.path().stem().string(); // Extract algorithm name
+                std::string errorFilename = algoName + ".error";
+                std::ofstream errorFile(errorFilename);
+                if (errorFile.is_open()) {
+                    errorFile << "Error loading algorithm " << algoName << ": " << e.what() << std::endl;
+                    errorFile.close();
+                } else {
+                    std::cerr << "Could not open error file: " << errorFilename << std::endl;
+                }
             }
-            libs.push_back(lib_ptr);
         }
     }
 }
@@ -438,137 +418,191 @@ void register_libs(const char* libs_dir, std::vector<void*>& libs){
 void clear_libs(std::vector<void*>& libs) {
     for (void* lib : libs) {
         if (lib) {
-            std::cout << "Closing library: " << lib << std::endl;
+            //std::cout << "Closing library: " << lib << std::endl;
             if (dlclose(lib) != 0) {
                 std::cerr << "Error closing library: " << dlerror() << std::endl;
             }
         }
     }
-    std::cout << "Finished clearing libraries." << std::endl;
+    //std::cout << "Finished clearing libraries." << std::endl;
+}
+
+
+int MySimulator::calculateTimeout() const {
+    return maxStepsAllowed * 1; 
+}
+
+
+
+void run_simulation_with_timeout(const std::string& house, const std::string& algo_name, 
+                                 std::unique_ptr<AbstractAlgorithm> algorithm, int& score) {
+    MySimulator simulator;
+    
+    if (!simulator.readHouseFile(house)) {
+        std::lock_guard<std::mutex> lock(consoleMutex);
+        //std::cerr << "Error reading the file " << house << ". The file will be ignored." << std::endl;
+        return;
+    }
+    
+    try {
+        simulator.setAlgorithm(std::move(algorithm), algo_name);
+        
+        int timeout = simulator.calculateTimeout();
+        auto future = std::async(std::launch::async, [&simulator]() {
+            return simulator.run();
+        });
+        
+        if (future.wait_for(std::chrono::milliseconds(timeout)) == std::future_status::timeout) {
+            int initialDirt = simulator.getVacuum().getTotalDirt();
+            score = simulator.getMaxStepsAllowed() * 2 + initialDirt * 300 + 2000;
+            std::cerr << "Timeout reached for house: " << house << " and algorithm: " << algo_name << std::endl;
+        } else {
+            std::lock_guard<std::mutex> lock(consoleMutex); // Protect score retrieval
+            score = future.get(); // Ensures that we retrieve the result from the simulation run
+        }
+    } catch (const std::exception& e) {
+        std::lock_guard<std::mutex> lock(consoleMutex);
+        std::string errorFilename = algo_name + ".error";
+        std::ofstream errorFile(errorFilename);
+        if (errorFile.is_open()) {
+            errorFile << "Error: " << e.what() << std::endl;
+            errorFile.close();
+        } else {
+            std::cerr << "Could not open error file: " << errorFilename << std::endl;
+        }
+        score = -1; // Mark as invalid
+    } catch (...) {
+        std::lock_guard<std::mutex> lock(consoleMutex);
+        std::string errorFilename = algo_name + ".error";
+        std::ofstream errorFile(errorFilename);
+        if (errorFile.is_open()) {
+            errorFile << "Unknown error occurred while running algorithm " << algo_name << std::endl;
+            errorFile.close();
+        } else {
+            std::cerr << "Could not open error file: " << errorFilename << std::endl;
+        }
+        score = -1; // Mark as invalid
+    }
 }
 
 
 
 int main(int argc, char** argv) {
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <house_input_directory> <algorithm_directory>" << std::endl;
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " <house_input_directory> <algorithm_directory> [-num_threads=<NUMBER>]" << std::endl;
         return 1;
     }
 
-    int score = 0;
+    int numThreads = 10;
+    for (int i = 3; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg.find("-num_threads=") == 0) {
+            numThreads = std::stoi(arg.substr(13));
+        }
+    }
+
     std::vector<std::string> houseFiles;
     std::vector<std::string> algorithmNames;
-    std::vector<std::vector<int>> scores; // To store scores for all algorithms
-    std::vector<void*> algo_libs; // To store handles to the loaded libraries
+    std::vector<std::vector<int>> scores;
+    std::vector<void*> algo_libs;
 
-    std::string housePath = argv[1];
-    std::string algoPath = argv[2];
+    std::string housePath = "."; // Default to current working directory
+    std::string algoPath = ".";  // Default to current working directory
 
-    // Insert all files with suffix .house to houseFiles vector
+    for (int i = 1; i < argc; ++i) {
+        std::string argument = argv[i];
+
+        if (argument.find("-house_path=") == 0) {
+            housePath = argument.substr(std::string("-house_path=").length());
+        } else if (argument.find("-algo_path=") == 0) {
+            algoPath = argument.substr(std::string("-algo_path=").length());
+        }
+    }
+
+
     for (const auto& entry : std::filesystem::directory_iterator(housePath)) {
         if (entry.path().extension() == ".house") {
             houseFiles.push_back(entry.path().string());
-            std::cout << entry.path().string() << std::endl;
+            //std::cout << entry.path().string() << std::endl;
         }
     }
 
     register_libs(algoPath.c_str(), algo_libs);
-    std::cout << "RUNNING ON : " << AlgorithmRegistrar::getAlgorithmRegistrar().count() << " algorithms. "<<std::endl;
-    /*
-    for(const auto& algo: AlgorithmRegistrar::getAlgorithmRegistrar()){
-        auto algorithm = algo.create();
-        //std::cout<<algo.name()<<": " << static_cast<int>(algorithm->nextStep())<<std::endl;
-        std::cout<<algo.name()<<std::endl;
 
-    }
-    // Load the algorithms using dlopen
-   
-    for (const auto& entry : std::filesystem::directory_iterator(algoPath)) {
-        if (entry.path().extension() == ".so") {
-            void* handle = dlopen(entry.path().c_str(), RTLD_LAZY);
-            if (!handle) {
-                std::cerr << "Error loading algorithm: " << dlerror() << std::endl;
-                continue;
-            }
-            algo_libs.push_back(handle);
+    scores.resize(AlgorithmRegistrar::getAlgorithmRegistrar().count(), std::vector<int>(houseFiles.size(), -1));
 
-            typedef AbstractAlgorithm* (*CreateAlgoFunc)();
-            CreateAlgoFunc createAlgo = (CreateAlgoFunc) dlsym(handle, "create_algorithm");
-            const char* dlsym_error = dlerror();
-            if (dlsym_error) {
-                std::cerr << "Error locating create_algorithm: " << dlsym_error << std::endl;
-                dlclose(handle);
-                algo_libs.pop_back();
-                continue;
-            }
-
-            AlgorithmRegistrar::getAlgorithmRegistrar().registerAlgorithm(entry.path().stem().string(), [createAlgo]() {
-                return std::unique_ptr<AbstractAlgorithm>(createAlgo());
-            });
-        }
-    }
-    */
-
-    // Iterate through each registered algorithm
+    int algorithmIndex = 0;
     for (const auto& algo : AlgorithmRegistrar::getAlgorithmRegistrar()) {
-        std::cout << "BEFORE CREATING THE PROGRAM" << std::endl;
-
-        std::vector<int> currentScores; // Store scores for the current algorithm
         algorithmNames.push_back(algo.name());
 
-        // Loop through each house file
-        for (auto it = houseFiles.begin(); it != houseFiles.end(); ) {
-            MySimulator simulator;
+        int houseIndex = 0;
+        std::vector<std::thread> threadPool;
 
-            if (!simulator.readHouseFile(*it)) {
-                std::cout << "Error reading the file " << *it << ". The file will be ignored." << std::endl;
-                // Remove invalid house file from the list
-                it = houseFiles.erase(it);
-            } else {
-                auto algorithm = algo.create();
-                simulator.setAlgorithm(algorithm.release(), algo.name());
-                score = simulator.run();
-                std::cout << "The score is: " << score << std::endl;
-                currentScores.push_back(score);
+        while (houseIndex < houseFiles.size()) {
+            threadPool.clear();
 
-                ++it;
+            for (int t = 0; t < numThreads && houseIndex < houseFiles.size(); ++t, ++houseIndex) {
+                auto algorithmClone = algo.create();
+                threadPool.emplace_back(run_simulation_with_timeout, houseFiles[houseIndex], algo.name(), std::move(algorithmClone), std::ref(scores[algorithmIndex][houseIndex]));
+            }
+
+            for (auto& thread : threadPool) {
+                if (thread.joinable()) {
+                    thread.join();
+                }
             }
         }
-        
-        // Store the scores for the current algorithm in the main scores vector
-        scores.push_back(currentScores);
+
+        ++algorithmIndex;
     }
 
-    // Write the results to a CSV file
     std::ofstream csvFile("summary.csv");
     if (!csvFile.is_open()) {
         std::cerr << "Error: Could not create summary.csv" << std::endl;
         return 1;
     }
-    
-    // Write the header
+
+    std::vector<std::string> validHouseFiles;
+    for (int i = 0; i < houseFiles.size(); ++i) {
+        bool valid = false;
+        for (int j = 0; j < algorithmNames.size(); ++j) {
+            if (scores[j][i] != -1) {
+                valid = true;
+                break;
+            }
+        }
+        if (valid) {
+            validHouseFiles.push_back(houseFiles[i]);
+        }
+    }
+
+    //writing to the summary.csv file
     csvFile << "Algorithm/House";
-    for (const auto& house : houseFiles) {
+    for (const auto& house : validHouseFiles) {
         std::string baseHouseName = std::filesystem::path(house).stem().string();
         csvFile << "," << baseHouseName;
     }
     csvFile << "\n";
 
-    // Write the scores
     for (int i = 0; i < algorithmNames.size(); ++i) {
         csvFile << algorithmNames[i];
-        for (const auto& score : scores[i]) {
-            csvFile << "," << score;
+        for (int j = 0; j < validHouseFiles.size(); ++j) {
+            int houseIndex = std::distance(houseFiles.begin(), std::find(houseFiles.begin(), houseFiles.end(), validHouseFiles[j]));
+            csvFile << "," << (scores[i][houseIndex] != -1 ? std::to_string(scores[i][houseIndex]) : "");
         }
         csvFile << "\n";
     }
 
     csvFile.close();
-    std::cout << "Summary written to summary.csv" << std::endl;
+    //std::cout << "Summary written to summary.csv" << std::endl;
 
-    // Close all dynamically loaded libraries
-    std::cout<<"ENDING AND CLEARIRNG ALGORITHMS"<<std::endl;
+
+
+
+    AlgorithmRegistrar::getAlgorithmRegistrar().clear();
     clear_libs(algo_libs);
+    std::cout << "The Algorithm Finished Running" << std::endl;
+
     return 0;
 }
 

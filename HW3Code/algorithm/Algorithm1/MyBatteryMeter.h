@@ -4,7 +4,7 @@ class MyBatteryMeter : public BatteryMeter {
     const Vacuum& vacuum;
 public:
     MyBatteryMeter(Vacuum& v):vacuum(v) {
-        std::cout<<"in battery sensor constructor"<<std::endl;
+        //std::cout<<"in battery sensor constructor"<<std::endl;
     }
 
     std::size_t getBatteryState() const override {
